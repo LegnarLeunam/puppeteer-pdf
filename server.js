@@ -1,60 +1,44 @@
 import express from 'express';
+import bodyParser from 'body-parser';
 import cors from 'cors';
 import puppeteer from 'puppeteer';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middlewares
 app.use(cors());
-app.use(express.json({ limit: '2mb' }));
+app.use(bodyParser.json());
 
-// Ruta principal
-app.get('/', (_req, res) => {
-  res.send('Puppeteer PDF Service Ready');
+app.get('/', (_, res) => {
+  res.send('✅ Puppeteer PDF Service Ready');
 });
 
-// Ruta para generar PDF
 app.post('/generate-pdf', async (req, res) => {
   const { html } = req.body;
 
-  if (!html || typeof html !== 'string') {
-    return res.status(400).send('Invalid request: "html" field is required.');
+  if (!html) {
+    return res.status(400).send('Missing HTML content.');
   }
 
-  let browser;
   try {
-    browser = await puppeteer.launch({
-      headless: 'new',
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu',
-        '--no-zygote',
-        '--single-process'
-      ]
+    const browser = await puppeteer.launch({
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
-
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'networkidle0' });
-
-    const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
+    const pdfBuffer = await page.pdf({ format: 'A4' });
+    await browser.close();
 
     res.set({
       'Content-Type': 'application/pdf',
-      'Content-Disposition': 'attachment; filename="documento.pdf"',
+      'Content-Disposition': 'inline; filename="document.pdf"',
       'Content-Length': pdfBuffer.length
     });
 
     res.send(pdfBuffer);
   } catch (err) {
-    console.error('❌ Error generating PDF:', err);
+    console.error('❌ Error generating PDF:', err.message);
     res.status(500).send('Error generating PDF');
-  } finally {
-    if (browser) {
-      await browser.close();
-    }
   }
 });
 

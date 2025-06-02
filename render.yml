@@ -8,8 +8,5 @@ services:
     envVars:
       - key: PORT
         value: "3000"
-      - key: PUPPETEER_CACHE_DIR
-        value: "/workspace/.cache/puppeteer"
       - key: PUPPETEER_SKIP_DOWNLOAD
         value: "false"
-
