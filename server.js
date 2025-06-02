@@ -1,3 +1,8 @@
+app.get('/', (req, res) => {
+  res.send('Puppeteer PDF API is running!');
+});
+
+
 const express = require('express');
 const puppeteer = require('puppeteer');
 const app = express();
