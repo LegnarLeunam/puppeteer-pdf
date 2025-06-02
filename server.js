@@ -4,27 +4,24 @@ import cors from 'cors';
 import puppeteer from 'puppeteer';
 
 const app = express();
-const port = process.env.PORT || 8080;
+const PORT = process.env.PORT || 8080;
 
 app.use(cors());
-app.use(bodyParser.json());
-
-app.get('/', (req, res) => {
-  res.send('✅ Puppeteer PDF Service Ready');
-});
+app.use(bodyParser.json({ limit: '10mb' }));
 
 app.post('/generate-pdf', async (req, res) => {
-  const { html } = req.body;
-
-  if (!html || typeof html !== 'string') {
-    return res.status(400).send('Missing or invalid "html" field in request body.');
-  }
-
   try {
+    const { html } = req.body;
+
+    if (!html || typeof html !== 'string') {
+      return res.status(400).json({ error: 'HTML content is required' });
+    }
+
     const browser = await puppeteer.launch({
-      headless: 'new',
+      headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
+
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'networkidle0' });
 
@@ -33,17 +30,21 @@ app.post('/generate-pdf', async (req, res) => {
 
     res.set({
       'Content-Type': 'application/pdf',
-      'Content-Disposition': 'attachment; filename="generated.pdf"',
-      'Content-Length': pdfBuffer.length
+      'Content-Disposition': 'attachment; filename="documento.pdf"',
+      'Content-Length': pdfBuffer.length,
     });
 
     res.send(pdfBuffer);
-  } catch (error) {
-    console.error('❌ Error generating PDF:', error);
-    res.status(500).send('Error generating PDF');
+  } catch (err) {
+    console.error('❌ Error generating PDF:', err);
+    res.status(500).json({ error: 'Error generating PDF' });
   }
 });
 
-app.listen(port, () => {
-  console.log(`✅ PDF service running on port ${port}`);
+app.get('/', (req, res) => {
+  res.send('PDF generator is running');
+});
+
+app.listen(PORT, () => {
+  console.log(`✅ PDF service running on port ${PORT}`);
 });
