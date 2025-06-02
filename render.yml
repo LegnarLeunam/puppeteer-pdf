@@ -1,10 +1,11 @@
 services:
   - type: web
-    name: puppeteer-pdf-service
+    name: puppeteer-pdf
     env: node
-    plan: free
+    plan: starter
     buildCommand: npm install
-    startCommand: npm start
+    startCommand: node server.js
     envVars:
-      - key: NODE_ENV
-        value: production
+      - key: PORT
+        value: 3000
+
