@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "Microservicio para generar PDFs desde HTML usando Puppeteer",
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "start": "node server.js"
   },
-  "type": "module",
   "dependencies": {
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
