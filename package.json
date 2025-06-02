@@ -1,0 +1,14 @@
+{
+  "name": "puppeteer-pdf-service",
+  "version": "1.0.0",
+  "description": "Microservicio para generar PDFs desde HTML usando Puppeteer",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "express": "^4.18.2",
+    "puppeteer": "^21.3.8"
+  }
+}
