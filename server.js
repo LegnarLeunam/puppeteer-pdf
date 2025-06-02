@@ -1,45 +1,44 @@
-app.get('/', (req, res) => {
-  res.send('Puppeteer PDF API is running!');
-});
-
-
 const express = require('express');
 const puppeteer = require('puppeteer');
-const app = express();
+const bodyParser = require('body-parser');
 
-app.use(express.json({ limit: '10mb' }));
+const app = express();
+const PORT = process.env.PORT || 8080;
+
+app.use(bodyParser.json());
+
+app.get('/', (req, res) => {
+  res.send('Puppeteer PDF Service Ready');
+});
 
 app.post('/generate', async (req, res) => {
   const { html } = req.body;
-  if (!html) {
+
+  if (!html || typeof html !== 'string') {
     return res.status(400).send('No HTML content received.');
   }
 
   try {
     const browser = await puppeteer.launch({
       headless: 'new',
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
+
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'networkidle0' });
-
-    const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
+    const pdfBuffer = await page.pdf({ format: 'A4' });
 
     await browser.close();
 
-    res.set({
-      'Content-Type': 'application/pdf',
-      'Content-Disposition': 'attachment; filename="document.pdf"',
-    });
-
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename=generated.pdf');
     res.send(pdfBuffer);
   } catch (err) {
-    console.error(err);
+    console.error('Error generating PDF:', err);
     res.status(500).send('Error generating PDF');
   }
 });
 
-const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`PDF Generator running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
